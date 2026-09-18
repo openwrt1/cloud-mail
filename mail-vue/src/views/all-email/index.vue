@@ -82,6 +82,9 @@
           </el-select>
           <el-button :loading="clearLoading" type="primary" @click="batchDelete">{{ t('clear') }}</el-button>
         </div>
+        <div class="clear-button" style="margin-top: 10px;">
+          <el-button :loading="cleanUnassignedLoading" type="danger" @click="cleanUnassigned">一键清理无收件人邮件</el-button>
+        </div>
       </div>
     </el-dialog>
   </div>
@@ -96,7 +99,8 @@ import {
   allEmailList,
   allEmailDelete,
   allEmailBatchDelete,
-  allEmailLatest
+  allEmailLatest,
+  allEmailCleanUnassigned
 } from "@/request/all-email.js";
 import {Icon} from "@iconify/vue";
 import router from "@/router/index.js";
@@ -120,6 +124,7 @@ const searchValue = ref('')
 const mySelect = ref()
 const showBathDelete = ref(false)
 const clearLoading = ref(false)
+const cleanUnassignedLoading = ref(false)
 
 onMounted(() => {
   latest();
@@ -223,6 +228,30 @@ function batchDelete() {
       sysEmailScroll.value.refreshList();
     }).finally(() => {
       clearLoading.value = false
+    })
+  })
+}
+
+function cleanUnassigned() {
+  ElMessageBox.confirm(
+      '确定要一键清理所有无收件人邮件吗？此操作不可恢复。',
+      {
+        confirmButtonText: t('confirm'),
+        cancelButtonText: t('cancel'),
+        type: 'warning',
+      }
+  ).then(() => {
+    cleanUnassignedLoading.value = true
+    allEmailCleanUnassigned().then(() => {
+      ElMessage({
+        message: t('clearSuccess'),
+        type: "success",
+        plain: true
+      })
+      showBathDelete.value = false
+      sysEmailScroll.value.refreshList();
+    }).finally(() => {
+      cleanUnassignedLoading.value = false
     })
   })
 }

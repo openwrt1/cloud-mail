@@ -983,6 +983,18 @@ const emailService = {
 		await orm(c).delete(email).where(eq(email.accountId, accountId)).run();
 	},
 
+	async cleanUnassigned(c) {
+		const emailIdsRow = await orm(c).select({emailId: email.emailId}).from(email).where(eq(email.accountId, 0)).all();
+		const emailIds = emailIdsRow.map(row => row.emailId);
+
+		if (emailIds.length === 0){
+			return;
+		}
+
+		await attService.removeByEmailIds(c, emailIds);
+		await orm(c).delete(email).where(eq(email.accountId, 0)).run();
+	},
+
 	async read(c, params, userId) {
 		const { emailIds } = params;
 		await orm(c).update(email).set({ unread: emailConst.unread.READ }).where(and(eq(email.userId, userId), inArray(email.emailId, emailIds)));

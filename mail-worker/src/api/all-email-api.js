@@ -17,6 +17,11 @@ app.delete('/allEmail/batchDelete', async (c) => {
 	return c.json(result.ok());
 })
 
+app.delete('/allEmail/cleanUnassigned', async (c) => {
+	await emailService.cleanUnassigned(c);
+	return c.json(result.ok());
+})
+
 app.get('/allEmail/latest', async (c) => {
 	const list = await emailService.allEmailLatest(c, c.req.query());
 	return c.json(result.ok(list));
