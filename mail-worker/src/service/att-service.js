@@ -90,7 +90,7 @@ const attService = {
 				const attData = {};
 
 				if (src.startsWith(domainUtils.toOssDomain(r2Domain))) {
-					attData.key = src.replace(domainUtils.toOssDomain(r2Domain) + '/','');
+					attData.key = src.replace(domainUtils.toOssDomain(r2Domain) + '/', '');
 				}
 
 				if (src.startsWith('attachments/')) {
@@ -115,7 +115,7 @@ const attService = {
 
 		//查询已有内嵌url图片信息
 		const keys = [...new Set(imageDataList.filter(item => !item.content).map(item => item.key))];
-		const dbImageList  = await this.selectOneByKeys(c, keys);
+		const dbImageList = await this.selectOneByKeys(c, keys);
 
 		//设置给当前附件
 		await Promise.all(imageDataList.map(async image => {
@@ -229,7 +229,7 @@ const attService = {
 									 HAVING COUNT (*) = 1) t
 									ON a.key = t.key
 						WHERE a.${fieldName} = ?;`
-					).bind(value)
+				).bind(value)
 			)
 
 			sqlList.push(c.env.db.prepare(`DELETE FROM attachments WHERE ${fieldName} = ?`).bind(value))

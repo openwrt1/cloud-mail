@@ -395,9 +395,9 @@ const list = computed(() => {
 
 const itemHeight = computed(() => {
     if (props.type === 'all-email') {
-      return isMobile.value ? 132 : 65;
+      return isMobile.value ? 140 : 73;
     } else  {
-      return isMobile.value ? 83 : 48;
+      return isMobile.value ? 91 : 56;
     }
 })
 
@@ -984,12 +984,15 @@ function loadData() {
 :deep(.email-row) {
   display: flex;
   padding: 8px 0;
+  margin: 4px 8px;
+  border-radius: 12px;
+  background: var(--light-ill);
   justify-content: space-between;
-  box-shadow: var(--header-actions-border);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.02);
   cursor: pointer;
   align-items: center;
   position: relative;
-  transition: background 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   height: 48px;
   @media (max-width: 1366px) {
     height: 83px;
@@ -1234,11 +1237,13 @@ function loadData() {
 
   &:hover {
     background-color: var(--email-hover-background);
-    z-index: 0;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    z-index: 10;
   }
 
   /*&[data-checked="true"] {
-    background-color: #c2dbff;
+    background-color: var(--choose-account-background);
   }*/
 }
 
@@ -1280,8 +1285,9 @@ function loadData() {
   grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 15px;
-  padding: 3px 15px;
-  box-shadow: var(--header-actions-border);
+  padding: 8px 15px;
+  background: var(--base-fill);
+  border-bottom: 1px solid var(--light-border);
 
   .header-left {
     display: flex;
