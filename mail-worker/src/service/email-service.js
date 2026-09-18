@@ -72,7 +72,7 @@ const emailService = {
 			)
 			.where(
 				and(
-					allReceive ? eq(1,1) : eq(email.accountId, accountId),
+					allReceive ? eq(1, 1) : eq(email.accountId, accountId),
 					eq(email.userId, userId),
 					timeSort ? gt(email.emailId, emailId) : lt(email.emailId, emailId),
 					eq(email.type, type),
@@ -96,17 +96,17 @@ const emailService = {
 			)
 			.where(
 				and(
-					allReceive ? eq(1,1) : eq(email.accountId, accountId),
+					allReceive ? eq(1, 1) : eq(email.accountId, accountId),
 					eq(email.userId, userId),
 					eq(email.type, type),
 					eq(email.isDel, isDel.NORMAL),
 					eq(account.isDel, isDel.NORMAL)
 				)
-		).get();
+			).get();
 
 		const latestEmailQuery = orm(c).select().from(email).where(
 			and(
-				allReceive ? eq(1,1) : eq(email.accountId, accountId),
+				allReceive ? eq(1, 1) : eq(email.accountId, accountId),
 				eq(email.userId, userId),
 				eq(email.type, type),
 				eq(email.isDel, isDel.NORMAL)
@@ -223,8 +223,8 @@ const emailService = {
 
 		if (c.env.admin !== userRow.email) {
 			//用户没有这个域名的使用权限
-			if(!roleService.hasAvailDomainPerm(roleRow.availDomain, accountRow.email)) {
-				throw new BizError(t('noDomainPermSend'),403)
+			if (!roleService.hasAvailDomainPerm(roleRow.availDomain, accountRow.email)) {
+				throw new BizError(t('noDomainPermSend'), 403)
 			}
 
 		}
@@ -298,7 +298,7 @@ const emailService = {
 			throw new BizError(error.message);
 		}
 
-		imageDataList = imageDataList.map(item => ({...item, contentId: `<${item.contentId}>`}))
+		imageDataList = imageDataList.map(item => ({ ...item, contentId: `<${item.contentId}>` }))
 
 		//把图片标签cid标签切换会通用url
 		html = this.imgReplace(html, imageDataList, r2Domain);
@@ -367,12 +367,12 @@ const emailService = {
 		//记录每天发件次数统计
 		if (!daySendTotal) {
 			await c.env.kv.put(kvConst.SEND_DAY_COUNT + dateStr, JSON.stringify(receiveEmail.length), { expirationTtl: 60 * 60 * 24 });
-		} else  {
+		} else {
 			daySendTotal = Number(daySendTotal) + receiveEmail.length
 			await c.env.kv.put(kvConst.SEND_DAY_COUNT + dateStr, JSON.stringify(daySendTotal), { expirationTtl: 60 * 60 * 24 });
 		}
 
-		return [ emailResult ];
+		return [emailResult];
 	},
 
 	async sendByCloudflareEmail(c, params) {
@@ -543,7 +543,7 @@ const emailService = {
 	//处理站内邮件发送
 	async HandleOnSiteEmail(c, receiveEmail, sendEmailData, attList) {
 
-		const { noRecipient  } = await settingService.query(c);
+		const { noRecipient } = await settingService.query(c);
 
 		//查询所有收件人账号信息
 		let accountList = await orm(c).select().from(account).where(inArray(account.email, receiveEmail)).all();
@@ -558,7 +558,7 @@ const emailService = {
 		for (const email of receiveEmail) {
 
 			//把发件人邮件改成收件
-			const emailValues = {...sendEmailData}
+			const emailValues = { ...sendEmailData }
 			emailValues.status = emailConst.status.RECEIVE;
 			emailValues.type = emailConst.type.RECEIVE;
 			emailValues.toEmail = email;
@@ -586,7 +586,7 @@ const emailService = {
 					if (!roleService.hasAvailDomainPerm(availDomain, email)) {
 						emailValues.status = emailConst.status.BOUNCED;
 						emailValues.message = `The recipient <${email}> is not authorized to use this domain.`;
-					} else if(roleService.isBanEmail(banEmail, sendEmailData.sendEmail)) {
+					} else if (roleService.isBanEmail(banEmail, sendEmailData.sendEmail)) {
 						emailValues.status = emailConst.status.BOUNCED;
 						emailValues.message = `The recipient <${email}> is disabled from receiving emails.`;
 					}
@@ -624,7 +624,7 @@ const emailService = {
 
 			//设置附件保存
 			for (const attRow of attList) {
-				const attValues = {...attRow};
+				const attValues = { ...attRow };
 				attValues.emailId = emailRow.emailId;
 				attValues.accountId = emailRow.accountId;
 				attValues.userId = emailRow.userId;
@@ -709,7 +709,7 @@ const emailService = {
 			allReceive = accountRow.allReceive;
 		}
 
-		let list = await orm(c).select({...email}).from(email)
+		let list = await orm(c).select({ ...email }).from(email)
 			.leftJoin(
 				account,
 				eq(account.accountId, email.accountId)
@@ -720,7 +720,7 @@ const emailService = {
 					eq(email.userId, userId),
 					eq(email.isDel, isDel.NORMAL),
 					eq(account.isDel, isDel.NORMAL),
-					allReceive ? eq(1,1) : eq(email.accountId, accountId),
+					allReceive ? eq(1, 1) : eq(email.accountId, accountId),
 					eq(email.type, emailConst.type.RECEIVE)
 				))
 			.orderBy(desc(email.emailId))
@@ -811,24 +811,24 @@ const emailService = {
 		}
 
 		if (userEmail) {
-			conditions.push(sql`${user.email} COLLATE NOCASE LIKE ${'%'+ userEmail + '%'}`);
+			conditions.push(sql`${user.email} COLLATE NOCASE LIKE ${'%' + userEmail + '%'}`);
 		}
 
 		if (accountEmail) {
 			conditions.push(
 				or(
-					sql`${email.toEmail} COLLATE NOCASE LIKE ${'%'+ accountEmail + '%'}`,
-					sql`${email.sendEmail} COLLATE NOCASE LIKE ${'%'+ accountEmail + '%'}`,
+					sql`${email.toEmail} COLLATE NOCASE LIKE ${'%' + accountEmail + '%'}`,
+					sql`${email.sendEmail} COLLATE NOCASE LIKE ${'%' + accountEmail + '%'}`,
 				)
 			)
 		}
 
 		if (name) {
-			conditions.push(sql`${email.name} COLLATE NOCASE LIKE ${'%'+ name + '%'}`);
+			conditions.push(sql`${email.name} COLLATE NOCASE LIKE ${'%' + name + '%'}`);
 		}
 
 		if (subject) {
-			conditions.push(sql`${email.subject} COLLATE NOCASE LIKE ${'%'+ subject + '%'}`);
+			conditions.push(sql`${email.subject} COLLATE NOCASE LIKE ${'%' + subject + '%'}`);
 		}
 
 		conditions.push(ne(email.status, emailConst.status.SAVING));
@@ -885,7 +885,7 @@ const emailService = {
 
 		const { emailId } = params;
 
-		let list = await orm(c).select({...email, userEmail: user.email}).from(email)
+		let list = await orm(c).select({ ...email, userEmail: user.email }).from(email)
 			.leftJoin(user, eq(email.userId, user.userId))
 			.where(
 				and(
@@ -933,7 +933,7 @@ const emailService = {
 	},
 
 	async batchDelete(c, params) {
-		let { sendName, sendEmail, toEmail, subject, startTime, endTime, type  } = params
+		let { sendName, sendEmail, toEmail, subject, startTime, endTime, type } = params
 
 		let right = type === 'left' || type === 'include'
 		let left = type === 'include'
@@ -941,35 +941,35 @@ const emailService = {
 		const conditions = []
 
 		if (sendName) {
-			conditions.push(like(email.name,`${left ? '%' : ''}${sendName}${right ? '%' : ''}`))
+			conditions.push(like(email.name, `${left ? '%' : ''}${sendName}${right ? '%' : ''}`))
 		}
 
 		if (subject) {
-			conditions.push(like(email.subject,`${left ? '%' : ''}${subject}${right ? '%' : ''}`))
+			conditions.push(like(email.subject, `${left ? '%' : ''}${subject}${right ? '%' : ''}`))
 		}
 
 		if (sendEmail) {
-			conditions.push(like(email.sendEmail,`${left ? '%' : ''}${sendEmail}${right ? '%' : ''}`))
+			conditions.push(like(email.sendEmail, `${left ? '%' : ''}${sendEmail}${right ? '%' : ''}`))
 		}
 
 		if (toEmail) {
-			conditions.push(like(email.toEmail,`${left ? '%' : ''}${toEmail}${right ? '%' : ''}`))
+			conditions.push(like(email.toEmail, `${left ? '%' : ''}${toEmail}${right ? '%' : ''}`))
 		}
 
 		if (startTime && endTime) {
-			conditions.push(gte(email.createTime,`${startTime}`))
-			conditions.push(lte(email.createTime,`${endTime}`))
+			conditions.push(gte(email.createTime, `${startTime}`))
+			conditions.push(lte(email.createTime, `${endTime}`))
 		}
 
 		if (conditions.length === 0) {
 			return;
 		}
 
-		const emailIdsRow = await orm(c).select({emailId: email.emailId}).from(email).where(conditions.length > 1 ? and(...conditions) : conditions[0]).all();
+		const emailIdsRow = await orm(c).select({ emailId: email.emailId }).from(email).where(conditions.length > 1 ? and(...conditions) : conditions[0]).all();
 
 		const emailIds = emailIdsRow.map(row => row.emailId);
 
-		if (emailIds.length === 0){
+		if (emailIds.length === 0) {
 			return;
 		}
 
@@ -984,15 +984,39 @@ const emailService = {
 	},
 
 	async cleanUnassigned(c) {
-		const emailIdsRow = await orm(c).select({emailId: email.emailId}).from(email).where(eq(email.accountId, 0)).all();
+		// Log some stats for debugging
+		const allEmails = await orm(c).select({
+			emailId: email.emailId,
+			accountId: email.accountId,
+			isDel: email.isDel,
+			status: email.status
+		}).from(email).all();
+
+		let unassignedCount = 0;
+		let softDeletedCount = 0;
+
+		allEmails.forEach(e => {
+			if (e.accountId === 0) unassignedCount++;
+			if (e.isDel === isDel.DELETE) softDeletedCount++;
+		});
+
+		console.log(`[DEBUG] Total emails: ${allEmails.length}`);
+		console.log(`[DEBUG] Unassigned (accountId=0): ${unassignedCount}`);
+		console.log(`[DEBUG] Soft deleted (isDel=1): ${softDeletedCount}`);
+
+		const conditions = or(eq(email.accountId, 0), eq(email.isDel, isDel.DELETE));
+
+		const emailIdsRow = await orm(c).select({ emailId: email.emailId }).from(email).where(conditions).all();
 		const emailIds = emailIdsRow.map(row => row.emailId);
 
-		if (emailIds.length === 0){
+		console.log(`[DEBUG] Going to physically delete ${emailIds.length} emails.`);
+
+		if (emailIds.length === 0) {
 			return;
 		}
 
 		await attService.removeByEmailIds(c, emailIds);
-		await orm(c).delete(email).where(eq(email.accountId, 0)).run();
+		await orm(c).delete(email).where(conditions).run();
 	},
 
 	async read(c, params, userId) {
